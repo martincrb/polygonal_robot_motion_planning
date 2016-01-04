@@ -87,6 +87,8 @@ while running:
     #draw text
     label = font.render("Number of obstacles: "+str(len(obstacles)), 1, (0,0,0))
     screen.blit(label, (0, 0))
+    label = font.render("Actual State: "+states.getActualState(), 1, (0,0,0))
+    screen.blit(label, (0, 10))
 
     #swap
     pygame.display.flip()
