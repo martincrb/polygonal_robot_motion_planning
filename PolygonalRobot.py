@@ -10,6 +10,7 @@ pygame.display.set_caption('Polygonal Robot: motion planning')
 background_colour = (255,255,255)
 clock = pygame.time.Clock()
 running = True
+debug = False
 #fonts
 pygame.font.init()
 font = pygame.font.SysFont("monospace", 15)
@@ -20,6 +21,7 @@ font = pygame.font.SysFont("monospace", 15)
 obstacles = []
 c_obstacles = []
 robot = None
+minus_robot = None
 target = None
 
 #define global state of application
@@ -52,6 +54,8 @@ while running:
                     #create empty polygon and append to obstacles list
                     obstacle = Obstacle()
                     obstacles.append(obstacle)
+            if event.key == pygame.K_d:
+                debug = not debug
 
             if event.key == pygame.K_r:
                 if states.getActualState() == "DRAWING_ROBOT":
@@ -78,14 +82,29 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     if states.getActualState() == "COMPUTING_MINKOWSKI_SUMS" and robot != None:
-        (V, E) = visibility_graph(obstacles, robot.vertices[0], target.vertices[0])
-
+        #(V, E) = visibility_graph(obstacles, robot.vertices[0], target.vertices[0])
+        minus_robot = Robot()
+        minus_vertices = []
+        ref_point = robot.getRefPoint()
+        for v in robot.vertices:
+            minus_v = [None, None]
+            minus_v[0] = 2*ref_point[0] - v[0]
+            minus_v[1] = 2*ref_point[1] - v[1]
+            minus_vertices.append((minus_v[0], minus_v[1]))
+        minus_robot.vertices = minus_vertices
+        c_obstacles = []
+        for obstacle in obstacles:
+            c_obs = C_Obstacle()
+            c_obs.setVertices(GeoUtils.convex_hull(GeoUtils.mink_sum(minus_robot, obstacle)))
+            c_obstacles.append(c_obs)
+        (V, E) = visibility_graph(c_obstacles, robot.getRefPoint(), target.vertices[0])
         states.setActualState(None)
 
     #Renders
     screen.fill(background_colour)
-    for obstacle in c_obstacles:
-        obstacle.draw(screen)
+    if debug:
+        for c_obstacle in c_obstacles:
+            c_obstacle.draw(screen)
 
     for obstacle in obstacles:
         obstacle.draw(screen)
@@ -96,14 +115,18 @@ while running:
     if (target != None):
         target.draw(screen)
     #draw visibility graph
-    if (E != None):
-        for e in E:
-            pygame.draw.line(screen, (0,255,0), e[0], e[1])
+    if debug:
+        if (E != None):
+            for e in E:
+                pygame.draw.line(screen, (0,255,0), e[0], e[1])
     #draw text
     label = font.render("Number of obstacles: "+str(len(obstacles)), 1, (0,0,0))
     screen.blit(label, (0, 0))
     label = font.render("Actual State: "+states.getActualState(), 1, (0,0,0))
-    screen.blit(label, (0, 10))
-
+    screen.blit(label, (0, 12))
+    label = font.render("DEBUG: "+str(debug), 1, (0,0,0))
+    screen.blit(label, (280, 12))
+    label = font.render("R - draw Robot / O - draw Obstacle / T - place Target / SPACE - Compute", 1, (0,0,0))
+    screen.blit(label, (0, 24))
     #swap
     pygame.display.flip()

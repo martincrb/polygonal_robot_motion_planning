@@ -66,7 +66,7 @@ class C_Obstacle(Element):
     def __init__(self):
         self.vertices = []
         self.edges = []
-        self.color = (160,160,160)
+        self.color = (180,180,180)
         self.point_color = (0,0,220)
         self.viewPoints = True
 

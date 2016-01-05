@@ -1,5 +1,35 @@
 import math
 
+def is_right_turn(p, q, r):
+    return orientation2D(p, q, r) < 0
+
+def convex_hull(points):
+    c_hull = []
+    n = len(points)
+    left_most = min(points, key= lambda x: x[0])
+    l = points.index(left_most)
+    p = l
+    q = None
+    while True:
+        c_hull.append(points[p])
+        q = (p+1)%n
+        for i in range(n):
+            if (orientation2D(points[p], points[i], points[q]) == -1):
+                q = i
+        p = q
+        if (p == l): break
+    return c_hull
+
+def mink_sum(A, B):
+    C = []
+    ref_point = A.getRefPoint()
+    for a in A.vertices:
+        aa = [a[0] - ref_point[0], a[1] - ref_point[1]]
+        for b in B.vertices:
+            point = (b[0] + aa[0], b[1] + aa[1])
+            C.append(point)
+    return C
+
 def point_in_polygon(point, poly):
     n = len(poly.vertices)
     inside = False
