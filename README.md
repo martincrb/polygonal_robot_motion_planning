@@ -4,4 +4,3 @@ Finding the shortest path for a polygonal robot to the target, avoiding polygona
 Required libraries:
 
 PyGame 
-heapq
