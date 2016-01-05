@@ -1,6 +1,7 @@
 import pygame
 from Elements import *
 from State import *
+from VisibilityGraph import *
 
 #Start main window
 dimensions = (800, 600)
@@ -17,12 +18,13 @@ font = pygame.font.SysFont("monospace", 15)
 
 #logic elements
 obstacles = []
+c_obstacles = []
 robot = None
 target = None
 
 #define global state of application
 states = State()
-
+(V, E) = (None, None)
 while running:
     #Read and process user input
     for event in pygame.event.get():
@@ -66,15 +68,25 @@ while running:
                     print "Select the target point"
                     states.setActualState("SELECT_TARGET")
                     target = Target()
+            if event.key == pygame.K_SPACE:
+                if (target != None and robot != None):
+                    states.setActualState("COMPUTING_MINKOWSKI_SUMS")
 
 
     #Main Logic
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    if states.getActualState() == "COMPUTING_MINKOWSKI_SUMS" and robot != None:
+        (V, E) = visibility_graph(obstacles, robot.vertices[0], target.vertices[0])
+
+        states.setActualState(None)
 
     #Renders
     screen.fill(background_colour)
+    for obstacle in c_obstacles:
+        obstacle.draw(screen)
+
     for obstacle in obstacles:
         obstacle.draw(screen)
     #draw the robot
@@ -82,8 +94,11 @@ while running:
         robot.draw(screen)
     #draw the target
     if (target != None):
-        target.draw(screen);
-
+        target.draw(screen)
+    #draw visibility graph
+    if (E != None):
+        for e in E:
+            pygame.draw.line(screen, (0,255,0), e[0], e[1])
     #draw text
     label = font.render("Number of obstacles: "+str(len(obstacles)), 1, (0,0,0))
     screen.blit(label, (0, 0))
