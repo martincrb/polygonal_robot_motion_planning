@@ -1,7 +1,7 @@
 import math
 import GeoUtils
 from Graph import Graph
-from bintrees import AVLTree
+
 
 def getAllVertices(S):
     r = []
@@ -19,11 +19,15 @@ def visibility_graph(S, start, goal):
     for v in V:
         W = visible_vertices(v, S, start, goal)
         for w in W:
-            E.append([v, w])
+            E.append((v, w))
     Gvis = Graph()
-    Gvis.V = V
-    Gvis.E = E
-    return (Gvis.V, Gvis.E)
+    for v in V:
+        Gvis.addVertex(v)
+    for e in E:
+        Gvis.addEdge(e[0], e[1])
+        cost = GeoUtils.euclidean_distance(e[0],e[1])
+        Gvis.addCost((e[0], e[1]), cost)
+    return Gvis
 
 
 

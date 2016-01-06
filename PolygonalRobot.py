@@ -1,4 +1,5 @@
 import pygame
+import time
 from Elements import *
 from State import *
 from VisibilityGraph import *
@@ -11,6 +12,7 @@ background_colour = (255,255,255)
 clock = pygame.time.Clock()
 running = True
 debug = False
+elapsed_time = None
 #fonts
 pygame.font.init()
 font = pygame.font.SysFont("monospace", 15)
@@ -23,7 +25,8 @@ c_obstacles = []
 robot = None
 minus_robot = None
 target = None
-
+path = []
+pathEdges = []
 #define global state of application
 states = State()
 (V, E) = (None, None)
@@ -74,15 +77,16 @@ while running:
                     target = Target()
             if event.key == pygame.K_SPACE:
                 if (target != None and robot != None):
-                    states.setActualState("COMPUTING_MINKOWSKI_SUMS")
+                    states.setActualState("COMPUTING")
 
 
     #Main Logic
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    if states.getActualState() == "COMPUTING_MINKOWSKI_SUMS" and robot != None:
+    if states.getActualState() == "COMPUTING" and robot != None:
         #(V, E) = visibility_graph(obstacles, robot.vertices[0], target.vertices[0])
+        start_time = time.time()
         minus_robot = Robot()
         minus_vertices = []
         ref_point = robot.getRefPoint()
@@ -97,7 +101,17 @@ while running:
             c_obs = C_Obstacle()
             c_obs.setVertices(GeoUtils.convex_hull(GeoUtils.mink_sum(minus_robot, obstacle)))
             c_obstacles.append(c_obs)
-        (V, E) = visibility_graph(c_obstacles, robot.getRefPoint(), target.vertices[0])
+        Graph = visibility_graph(c_obstacles, robot.getRefPoint(), target.vertices[0])
+        path = Graph.DijkstraShortestPath(robot.getRefPoint(), target.vertices[0])
+        elapsed_time = time.time() - start_time
+        #this is for representation, not measured (time)
+        pathEdges = []
+        for i in range(len(path)-2):
+            pathEdges.append((path[i], path[i+1]))
+        pathEdges.append((path[len(path)-2], path[len(path)-1]))
+        V = Graph.V
+        E = Graph.E
+
         states.setActualState(None)
 
     #Renders
@@ -119,9 +133,14 @@ while running:
         if (E != None):
             for e in E:
                 pygame.draw.line(screen, (0,255,0), e[0], e[1])
+        if (len(pathEdges) > 0):
+            for e in pathEdges:
+                pygame.draw.line(screen, (255,0,255), e[0], e[1], 3)
     #draw text
     label = font.render("Number of obstacles: "+str(len(obstacles)), 1, (0,0,0))
     screen.blit(label, (0, 0))
+    label = font.render("Time to compute: "+str(elapsed_time), 1, (0,0,0))
+    screen.blit(label, (280, 0))
     label = font.render("Actual State: "+states.getActualState(), 1, (0,0,0))
     screen.blit(label, (0, 12))
     label = font.render("DEBUG: "+str(debug), 1, (0,0,0))

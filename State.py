@@ -2,7 +2,7 @@
 class State:
     def __init__(self):
         self.states = ["None",
-                       "COMPUTING_MINKOWSKI_SUMS",
+                       "COMPUTING",
                        "DRAWING_ROBOT",
                        "DRAWING_OBSTACLE",
                        "SELECT_TARGET"]
