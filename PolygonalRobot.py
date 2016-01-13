@@ -136,6 +136,10 @@ while running:
         if (len(pathEdges) > 0):
             for e in pathEdges:
                 pygame.draw.line(screen, (255,0,255), e[0], e[1], 3)
+    else:
+        if (len(pathEdges) > 0):
+            for e in pathEdges:
+                pygame.draw.line(screen, (255,0,255), e[0], e[1], 3)
     #draw text
     label = font.render("Number of obstacles: "+str(len(obstacles)), 1, (0,0,0))
     screen.blit(label, (0, 0))

@@ -83,6 +83,7 @@ class Robot(Element):
         if (len(self.vertices) > 0):
             return self.vertices[0]
 
+
 class Target(Element):
 
     def __init__(self):
